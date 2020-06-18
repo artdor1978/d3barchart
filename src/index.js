@@ -5,64 +5,72 @@ import * as d3 from "d3";
 function App() {
 	const url =
 		"https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json";
-
-	//const [dates, setDates] = useState([]);
 	const [values, setValues] = useState([]);
-
 	useEffect(() => {
 		d3.json(url).then((data) => {
-			//setDates((dates) => [...dates, data.data.map((x) => x[0])]);
-			//setValues((values) => [...values, data.data.map((x) => x[1])]);
 			setValues(data.data);
 		});
 	}, []);
-
-	//console.log('ssssssssssssssss',d3.max(values.map(x=>x[1])));
-	const w = 500;
-	const h = 500;
-	const padding = 30;
+	const w = 1200;
+	const h = 300;
+	const padding = 0;
 	const ref = useRef();
 	useEffect(() => {
-		//console.log('aaaa',values[8]);
+		const dates = values.map((x) => new Date(x[0]));
+		const billions = values.map((x) => x[1]);
+		const xScale = d3
+			.scaleTime()
+			.domain([d3.min(dates), d3.max(dates)])
+			.range([padding, w - padding]);
 		const yScale = d3
 			.scaleLinear()
-			.domain([0, d3.max(values.map((x) => x[1]))])
-			.range([h - padding, padding]);
-		console.log(yScale(18064.7), d3.max(values.map((x) => x[1])));
+			.domain([0, d3.max(billions)])
+			.range([padding, h - padding]);
 		const svgElement = d3.select(ref.current);
-		svgElement.attr("width", w).attr("height", h);
+		const xAxis = d3.axisBottom(xScale);
+		const yAxisScale = d3
+			.scaleLinear()
+			.domain([0, d3.max(billions)])
+			.range([h - padding, padding]);
+		const yAxis = d3.axisLeft(yAxisScale);
+		svgElement.attr("width", w + 100).attr("height", h + 60);
 		svgElement
 			.selectAll("rect")
-			.data(values.map((x) => x[1]))
+			.data(billions.map((x) => yScale(x)))
 			.enter()
 			.append("rect")
-			.attr("x", (d, i) => i)
-			.attr("y", (d) => h - yScale(d))
-			.attr("width", 25)
-			.attr("height", (d) => h - yScale(d))
-			.attr("fill", "navy")
+			.attr("data-date", function(d, i) {
+				return values[i][0];
+			})
+			.attr("data-gdp", function(d, i) {
+				return values[i][1];
+			})
+			.attr("x", (d, i) => 60 + xScale(dates[i]))
+			.attr("y", (d) => h - padding - d)
+			.attr("width", w / values.length - 1.5)
+			.attr("height", (d) => d)
+			.attr("fill", "tomato")
 			.attr("class", "bar")
 			.append("title")
-			.text((d) => d);
+			.attr("id", "tooltip");
+		/*.text((d) => d);*/
 		svgElement
-			.selectAll("text")
-			.data(values.map((x) => x[1]))
-			.enter()
-			.append("text")
-			.text((d) => d)
-			.attr("x", (d, i) => i)
-			.attr("y", (d) => h - (yScale(d) + 3));
+			.append("g")
+			.attr("transform", "translate(60, " + (h - padding) + ")")
+			.attr("id", "x-axis")
+			.call(xAxis);
+		svgElement
+			.append("g")
+			.attr("transform", "translate(60,0)")
+			.attr("id", "y-axis")
+			.call(yAxis);
 	}, [values]);
-
-	/*const svg = d3
-		.select("body")
-		.append("svg")
-		*/
 	return <svg ref={ref} />;
 }
 
 ReactDOM.render(
 	<React.StrictMode>
+		<div id="title">Gross Domestic Product, Billions of Dollars</div>
 		<App />
 	</React.StrictMode>,
 	document.getElementById("root")
