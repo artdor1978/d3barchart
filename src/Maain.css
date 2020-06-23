@@ -1,0 +1,11 @@
+body {
+	font-family: "Roboto", sans-serif;
+	color: #163D57;
+	background: #C8CDE5;
+}
+#title {
+	margin: 20px 0;
+	font-size: 32px;
+	text-align: center;
+	/* text-transform: capitalize; */
+}

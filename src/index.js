@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import * as d3 from "d3";
+import "./Maain.css";
 
 function App() {
 	const url =
@@ -11,9 +12,9 @@ function App() {
 			setValues(data.data);
 		});
 	}, []);
-	const w = 1200;
-	const h = 300;
-	const padding = 0;
+	const w = window.innerWidth;
+	const h = window.innerHeight;
+	const padding = 50;
 	const ref = useRef();
 	useEffect(() => {
 		const dates = values.map((x) => new Date(x[0]));
@@ -25,15 +26,16 @@ function App() {
 		const yScale = d3
 			.scaleLinear()
 			.domain([0, d3.max(billions)])
-			.range([padding, h - padding]);
+			.range([0, h - padding]);
 		const svgElement = d3.select(ref.current);
 		const xAxis = d3.axisBottom(xScale);
 		const yAxisScale = d3
 			.scaleLinear()
 			.domain([0, d3.max(billions)])
-			.range([h - padding, padding]);
+			.range([h - padding, 0]);
 		const yAxis = d3.axisLeft(yAxisScale);
-		svgElement.attr("width", w + 100).attr("height", h + 60);
+		const f = d3.format(".1f");
+		svgElement.attr("width", w).attr("height", h);
 		svgElement
 			.selectAll("rect")
 			.data(billions.map((x) => yScale(x)))
@@ -45,23 +47,23 @@ function App() {
 			.attr("data-gdp", function(d, i) {
 				return values[i][1];
 			})
-			.attr("x", (d, i) => 60 + xScale(dates[i]))
-			.attr("y", (d) => h - padding - d)
-			.attr("width", w / values.length - 1.5)
+			.attr("x", (d, i) => xScale(dates[i]))
+			.attr("y", (d) => h - padding - d + 10)
+			.attr("width", f(w / values.length))
 			.attr("height", (d) => d)
-			.attr("fill", "tomato")
+			.attr("fill", "#163D57")
 			.attr("class", "bar")
 			.append("title")
 			.attr("id", "tooltip");
 		/*.text((d) => d);*/
 		svgElement
 			.append("g")
-			.attr("transform", "translate(60, " + (h - padding) + ")")
+			.attr("transform", "translate(0," + (h - padding + 10) + ")")
 			.attr("id", "x-axis")
 			.call(xAxis);
 		svgElement
 			.append("g")
-			.attr("transform", "translate(60,0)")
+			.attr("transform", "translate(" + padding + ",10)")
 			.attr("id", "y-axis")
 			.call(yAxis);
 	}, [values]);
