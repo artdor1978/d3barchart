@@ -15,6 +15,8 @@ function App() {
 	const w = window.innerWidth;
 	const h = window.innerHeight;
 	const padding = 50;
+	const barWidth = (w - 2 * padding) / values.length;
+
 	const ref = useRef();
 	useEffect(() => {
 		const dates = values.map((x) => new Date(x[0]));
@@ -34,7 +36,7 @@ function App() {
 			.domain([0, d3.max(billions)])
 			.range([h - padding, 0]);
 		const yAxis = d3.axisLeft(yAxisScale);
-		const f = d3.format(".1f");
+		//const f = d3.format(".1f");
 		svgElement.attr("width", w).attr("height", h);
 		svgElement
 			.selectAll("rect")
@@ -47,9 +49,9 @@ function App() {
 			.attr("data-gdp", function(d, i) {
 				return values[i][1];
 			})
-			.attr("x", (d, i) => xScale(dates[i]))
+			.attr("x", (d, i) => i * barWidth+padding)
 			.attr("y", (d) => h - padding - d + 10)
-			.attr("width", f(w / values.length))
+			.attr("width", barWidth)
 			.attr("height", (d) => d)
 			.attr("fill", "#163D57")
 			.attr("class", "bar")
