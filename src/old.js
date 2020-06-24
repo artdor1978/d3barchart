@@ -6,58 +6,66 @@ import "./Maain.css";
 function App() {
 	const url =
 		"https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json";
-	const [values2, setValues] = useState([]);
+	const [values, setValues] = useState([]);
 	useEffect(() => {
 		d3.json(url).then((data) => {
 			setValues(data.data);
 		});
 	}, []);
-	const values = values2.slice(0, 15);
-	console.log(values);
+	const w = window.innerWidth;
+	const h = window.innerHeight;
+	const padding = 50;
+	const barWidth = (w - 2 * padding) / values.length;
+
 	const ref = useRef();
 	useEffect(() => {
-		const w = window.innerWidth;
-		const h = window.innerHeight;
-		const padding = 50;
-		const barWidth = (w - 2 * padding) / values.length;
-		console.log(barWidth);
 		const dates = values.map((x) => new Date(x[0]));
 		const billions = values.map((x) => x[1]);
 		const xScale = d3
 			.scaleTime()
 			.domain([d3.min(dates), d3.max(dates)])
-			.range([barWidth / 2, w - barWidth / 2]); //[padding, w - padding]);
+			.range([padding, w - padding]);
 		const yScale = d3
 			.scaleLinear()
 			.domain([0, d3.max(billions)])
-			.range([h - padding, padding]);
+			.range([0, h - padding]);
 		const svgElement = d3.select(ref.current);
 		const xAxis = d3.axisBottom(xScale);
-		const yAxis = d3.axisLeft(yScale);
+		const yAxisScale = d3
+			.scaleLinear()
+			.domain([0, d3.max(billions)])
+			.range([h - padding, 0]);
+		const yAxis = d3.axisLeft(yAxisScale);
+		//const f = d3.format(".1f");
 		svgElement.attr("width", w).attr("height", h);
 		svgElement
 			.selectAll("rect")
-			.data(values)
+			.data(billions.map((x) => yScale(x)))
 			.enter()
 			.append("rect")
-			.attr("x", (d) => xScale(new Date(d[0])) - barWidth / 2)
-			.attr("y", (d) => yScale(d[1]))
+			.attr("data-date", function(d, i) {
+				return values[i][0];
+			})
+			.attr("data-gdp", function(d, i) {
+				return values[i][1];
+			})
+			.attr("x", (d,i) => xScale(dates[i]))
+			.attr("y", (d) => h - padding - d + 10)
 			.attr("width", barWidth)
-			.attr("height", (d, i) => h - padding - yScale(d[1]))
+			.attr("height", (d) => d)
 			.attr("fill", "#163D57")
 			.attr("class", "bar")
-			.attr("data-date", (d) => d[0])
-			.attr("data-gdp", (d) => d[1])
 			.append("title")
 			.attr("id", "tooltip");
+		/*.text((d) => d);*/
 		svgElement
 			.append("g")
-			.attr("transform", "translate(0," + (h - padding) + ")")
+			.attr("transform", "translate(0," + (h - padding + 10) + ")")
 			.attr("id", "x-axis")
 			.call(xAxis);
 		svgElement
 			.append("g")
-			.attr("transform", "translate(" + padding + ",0)")
+			.attr("transform", "translate(" + padding + ",10)")
 			.attr("id", "y-axis")
 			.call(yAxis);
 	}, [values]);
@@ -75,4 +83,3 @@ ReactDOM.render(
 //https://ru.reactjs.org/docs/hooks-state.html
 //https://www.freecodecamp.org/learn/
 //https://wattenberger.com/blog/react-and-d3
-//http://jsfiddle.net/aWJtJ/8/
