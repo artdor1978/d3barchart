@@ -13,20 +13,21 @@ function App() {
 		});
 	}, []);
 	const values = values2.slice(0, 15);
-	console.log(values);
+	
 	const ref = useRef();
 	useEffect(() => {
 		const w = window.innerWidth;
 		const h = window.innerHeight;
 		const padding = 50;
 		const barWidth = (w - 2 * padding) / values.length;
-		console.log(barWidth);
 		const dates = values.map((x) => new Date(x[0]));
 		const billions = values.map((x) => x[1]);
+
 		const xScale = d3
 			.scaleTime()
 			.domain([d3.min(dates), d3.max(dates)])
-			.range([barWidth / 2, w - barWidth / 2]); //[padding, w - padding]);
+			.range([padding, w - padding]); //[barWidth / 2, w - barWidth / 2]);
+
 		const yScale = d3
 			.scaleLinear()
 			.domain([0, d3.max(billions)])
@@ -34,16 +35,17 @@ function App() {
 		const svgElement = d3.select(ref.current);
 		const xAxis = d3.axisBottom(xScale);
 		const yAxis = d3.axisLeft(yScale);
+		//console.log(new Date(d3.min(values.map((x) => x[0]))), d3.min(dates));
 		svgElement.attr("width", w).attr("height", h);
 		svgElement
 			.selectAll("rect")
 			.data(values)
 			.enter()
 			.append("rect")
-			.attr("x", (d) => xScale(new Date(d[0])) - barWidth / 2)
+			.attr("x", (d) => xScale(new Date(d[0])))
 			.attr("y", (d) => yScale(d[1]))
 			.attr("width", barWidth)
-			.attr("height", (d, i) => h - padding - yScale(d[1]))
+			.attr("height", (d) => h - padding - yScale(d[1]))
 			.attr("fill", "#163D57")
 			.attr("class", "bar")
 			.attr("data-date", (d) => d[0])
