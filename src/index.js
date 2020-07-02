@@ -12,43 +12,49 @@ function App() {
 			setValues(data.data);
 		});
 	}, []);
-	const values = values2.slice(0, 15);
-	
+	const values = values2
+		.slice(0, 15)
+		.map((x) => [new Date(x[0]), Number(x[1])]);
+
+	//console.log(values);
 	const ref = useRef();
 	useEffect(() => {
 		const w = window.innerWidth;
 		const h = window.innerHeight;
 		const padding = 50;
 		const barWidth = (w - 2 * padding) / values.length;
-		const dates = values.map((x) => new Date(x[0]));
-		const billions = values.map((x) => x[1]);
-
+		//const dates = values.map((x) => new Date(x[0]));
+		//const billions = values.map((x) => x[1]);
+		//console.log(d3.min(values.map(x=>x[1])));
 		const xScale = d3
 			.scaleTime()
-			.domain([d3.min(dates), d3.max(dates)])
+			.domain([
+				d3.min(values.map((x) => x[0])),
+				d3.max(values.map((x) => x[0])),
+			])
 			.range([padding, w - padding]); //[barWidth / 2, w - barWidth / 2]);
 
 		const yScale = d3
 			.scaleLinear()
-			.domain([0, d3.max(billions)])
+			.domain([0, d3.max(values.map((x) => x[1]))])
 			.range([h - padding, padding]);
 		const svgElement = d3.select(ref.current);
 		const xAxis = d3.axisBottom(xScale);
 		const yAxis = d3.axisLeft(yScale);
-		//console.log(new Date(d3.min(values.map((x) => x[0]))), d3.min(dates));
+		//console.log(values.map(x=>x[0].toISOString().substring(0, 10)));
 		svgElement.attr("width", w).attr("height", h);
 		svgElement
 			.selectAll("rect")
 			.data(values)
 			.enter()
 			.append("rect")
-			.attr("x", (d) => xScale(new Date(d[0])))
+			.attr("x", (d) => xScale(d[0]))
 			.attr("y", (d) => yScale(d[1]))
 			.attr("width", barWidth)
 			.attr("height", (d) => h - padding - yScale(d[1]))
 			.attr("fill", "#163D57")
 			.attr("class", "bar")
-			.attr("data-date", (d) => d[0])
+			.attr("data-date", (d) => d[0].toISOString().substring(0, 10))
 			.attr("data-gdp", (d) => d[1])
 			.append("title")
 			.attr("id", "tooltip");
